@@ -66,8 +66,11 @@ class ApiGuard implements Guard
         // 1. decode token
         $payload = $this->tokenService->decodeToken($accessToken);
         // 2. validate token
-        Log::error("isTokenExpired: " . $this->tokenService->isTokenExpired($payload->getExpiresAt()));
         if ($this->tokenService->isTokenExpired($payload->getExpiresAt())) {
+            $result = $this->tokenService->refreshToken($payload, $accessToken);
+            if ($result['success' == true]) {
+                return $result['access_token'];
+            }
             return null;
         }
         // 3. Check token in Redis

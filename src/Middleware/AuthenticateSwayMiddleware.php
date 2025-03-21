@@ -21,8 +21,6 @@ class AuthenticateSwayMiddleware
         // 1. Get user if Berear exist
         $user = Auth::guard($guardType)->user();
         // If the user is authenticated, bind the user to the request
-        Log::error("user: " . $user);
-
         if ($user) {
             $request->setUserResolver(function () use ($user) {
                 return $user;  // Return the authenticated user
