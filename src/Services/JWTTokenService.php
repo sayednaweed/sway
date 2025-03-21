@@ -166,7 +166,7 @@ class JWTTokenService
                     'message' => 'Success.',
                     "access_token" =>  $newAccessToken
                 ],
-                401
+                200
             );
         } else {
             return response()->json(
