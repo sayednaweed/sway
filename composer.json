@@ -1,0 +1,40 @@
+{
+  "name": "notion/sway",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "description": "A custom Laravel authentication package with Redis and database fallback for API authentication.",
+  "type": "library",
+  "require": {
+    "php": "^7.4|^8.0",
+    "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+    "illuminate/database": "^8.0|^9.0|^10.0|^11.0",
+    "illuminate/auth": "^8.0|^9.0|^10.0|^11.0",
+    "firebase/php-jwt": "^6.11"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Sway\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Sayed Naweed Sayedy",
+      "email": "sayednaweedsayedy@gmail.com"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Sway\\Providers\\SwayAuthServiceProvider"
+      ],
+      "middleware": [
+        "Sway\\Middleware\\AuthenticateSwayMiddleware",
+        "Sway\\Middleware\\MultiAuthenticateSwayMiddleware"
+      ],
+      "aliases": {
+        "ApiGuard": "Sway\\Guards\\ApiGuard"
+      }
+    }
+  }
+}
