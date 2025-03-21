@@ -141,6 +141,7 @@ class JWTTokenService
                 return response()->json(
                     [
                         'message' => 'Refresh Token expired.',
+                        'type' => null,
                         "access_token" => null
                     ],
                     401
@@ -164,6 +165,7 @@ class JWTTokenService
             return response()->json(
                 [
                     'message' => 'Success.',
+                    'type' => $type,
                     "access_token" =>  $newAccessToken
                 ],
                 200
@@ -172,6 +174,7 @@ class JWTTokenService
             return response()->json(
                 [
                     'message' => 'Unauthorized, Token is expired long time ago.',
+                    'type' => null,
                     "access_token" =>  null
                 ],
                 401
