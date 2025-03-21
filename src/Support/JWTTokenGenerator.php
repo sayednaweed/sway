@@ -9,9 +9,9 @@ class JWTTokenGenerator
     /**
      * Generate a new access token.
      *
-     * @return mix
+     * @return \Illuminate\Http\JsonResponse
      */
-    public static function refreshToken(): array
+    public static function refreshToken()
     {
         return app(JWTTokenService::class)->refreshToken();
     }
