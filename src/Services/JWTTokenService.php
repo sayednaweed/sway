@@ -107,13 +107,20 @@ class JWTTokenService
     /**
      * Generate JWT Refresh token
      * 
-     * @return mix
+     * @return response?: \Illuminate\Http\Response
      */
     public function refreshToken()
     {
         $accessToken = request()->bearerToken();
-        if (empty($accessToken))
-            return null;
+        if (empty($accessToken)) {
+            return response()->json(
+                [
+                    'message' => 'Invalid Token.',
+                    "access_token" => null
+                ],
+                401
+            );
+        }
 
         // 1. Get payload
         $payload = $this->decodeToken($accessToken);
@@ -131,7 +138,13 @@ class JWTTokenService
             if ($this->isTokenExpired($tokenRecord->refresh_token_expires_at)) {
                 $tokenRecord->delete();
                 $this->redisService->deleteToken($key);
-                return response()->json(['message' => 'Refresh Token expired.'], 401);
+                return response()->json(
+                    [
+                        'message' => 'Refresh Token expired.',
+                        "access_token" => null
+                    ],
+                    401
+                );
             }
 
             // 4.
@@ -148,11 +161,21 @@ class JWTTokenService
 
             // 2. Store in redis
             $this->redisService->storeTokenWithExpiry($key, $newAccessToken);
-            return [
-                "access_token" => $newAccessToken,
-            ];
+            return response()->json(
+                [
+                    'message' => 'Success.',
+                    "access_token" =>  $newAccessToken
+                ],
+                401
+            );
         } else {
-            return response()->json(['message' => 'Unauthorized, Token is expired long time ago.'], 401);
+            return response()->json(
+                [
+                    'message' => 'Unauthorized, Token is expired long time ago.',
+                    "access_token" =>  null
+                ],
+                401
+            );
         }
     }
 
