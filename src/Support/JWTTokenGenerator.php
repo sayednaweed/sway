@@ -9,7 +9,7 @@ class JWTTokenGenerator
     /**
      * Generate a new access token.
      *
-     * @return response?: \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public static function refreshToken(): array
     {
