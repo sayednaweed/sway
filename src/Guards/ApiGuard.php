@@ -11,7 +11,6 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Facades\Log;
 
 class ApiGuard implements Guard
 {
@@ -67,10 +66,6 @@ class ApiGuard implements Guard
         $payload = $this->tokenService->decodeToken($accessToken);
         // 2. validate token
         if ($this->tokenService->isTokenExpired($payload->getExpiresAt())) {
-            $result = $this->tokenService->refreshToken($payload, $accessToken);
-            if ($result['success' == true]) {
-                return $result['access_token'];
-            }
             return null;
         }
         // 3. Check token in Redis
