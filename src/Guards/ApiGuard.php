@@ -11,6 +11,7 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Log;
 
 class ApiGuard implements Guard
 {
@@ -65,6 +66,7 @@ class ApiGuard implements Guard
         // 1. decode token
         $payload = $this->tokenService->decodeToken($accessToken);
         // 2. validate token
+        Log::error("isTokenExpired: " . $this->tokenService->isTokenExpired($payload->getExpiresAt()));
         if ($this->tokenService->isTokenExpired($payload->getExpiresAt())) {
             return null;
         }
