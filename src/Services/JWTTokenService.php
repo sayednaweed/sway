@@ -107,7 +107,7 @@ class JWTTokenService
     /**
      * Generate JWT Refresh token
      * 
-     * @return \Illuminate\Http\JsonResponse
+     * @return mix
      */
     public function refreshToken()
     {
