@@ -36,7 +36,7 @@ class MultiAuthenticateSwayMiddleware
             });
         } else {
             // Return unauthorized response if no user found
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'access to the requested resource is forbidden'], 403);
         }
 
         return $next($request);

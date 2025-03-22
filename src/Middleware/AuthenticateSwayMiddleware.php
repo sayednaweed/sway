@@ -26,7 +26,7 @@ class AuthenticateSwayMiddleware
             });
         } else {
             // You can redirect to a custom login route or return an error message for API users
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'access to the requested resource is forbidden'], 403);
         }
 
         return $next($request);
