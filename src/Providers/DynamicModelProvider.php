@@ -36,10 +36,7 @@ class DynamicModelProvider implements UserProvider
         $passedType = "App\Models\\{$type}";
         if (strcasecmp($this->modelClass, $passedType) === 0) {
             // Same model token
-            return $this->modelClass::where('tokenable_id', $tokenableId)
-                ->where('tokenable_type', $type)
-                ->where('device', $device)
-                ->first();
+            return $this->modelClass::find($tokenableId);
         } else {
             return null;
         }
