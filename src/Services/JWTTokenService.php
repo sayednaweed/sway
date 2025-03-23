@@ -53,7 +53,7 @@ class JWTTokenService
 
         // Set token expiration times
         $accessTokenExpiresAt = now()->addMinutes(self::$accessTokenExpiration); // Access token expires in 1 hour
-        $refreshTokenExpiresAt = now()->addDays(self::$refreshTokenExpiration); // Refresh token expires in 2 weeks
+        $refreshTokenExpiresAt = now()->addMinutes(self::$refreshTokenExpiration); // Refresh token expires in 2 weeks
         // $refreshTokenExpiresAt = now()->addDays(self::$refreshTokenExpiration); // Refresh token expires in 2 weeks
 
         $accessPayload = [
