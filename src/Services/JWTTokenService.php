@@ -45,10 +45,10 @@ class JWTTokenService
         $modelName = StringUtils::getModelName($model);
 
         // 1. Delete token
-        DB::table('refresh_tokens as rt')
-            ->where('rt.tokenable_id', $user->id)
-            ->where('rt.tokenable_type', $modelName)
-            ->where('rt.device', $device)
+        DB::table('refresh_tokens')
+            ->where('tokenable_id', $user->id)
+            ->where('tokenable_type', $modelName)
+            ->where('device', $device)
             ->delete();
 
         // Set token expiration times
