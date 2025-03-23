@@ -16,19 +16,18 @@ class MultiAuthenticateSwayMiddleware
      */
     public function handle(Request $request, Closure $next, ...$guards): Response
     {
-        $user = null;
-
+        $result = null;
         // Iterate through each guard and try to authenticate the user
         foreach ($guards as $guard) {
             // Attempt to get the user for each guard
-            $user = Auth::guard($guard)->user();
+            $result = Auth::guard($guard)->user();
 
             // If the user is found, break out of the loop
-            if ($user) {
+            if ($result['user']) {
                 break;
             }
         }
-
+        $user = $result['user'];
         // If the user is authenticated, bind the user to the request
         if ($user) {
             $request->setUserResolver(function () use ($user) {
@@ -36,7 +35,7 @@ class MultiAuthenticateSwayMiddleware
             });
         } else {
             // Return unauthorized response if no user found
-            return response()->json(['message' => 'access to the requested resource is forbidden'], 403);
+            return response()->json(['message' => $result['message']], $result['status']);
         }
 
         return $next($request);

@@ -16,6 +16,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('tokenable_id');
             $table->string('tokenable_type');
+            $table->string('device');
+            $table->string('browser');
+            $table->string('ip_address');
             $table->text('access_token');
             $table->text('refresh_token');
             $table->timestamp('access_token_expires_at')->default(DB::raw('CURRENT_TIMESTAMP'));

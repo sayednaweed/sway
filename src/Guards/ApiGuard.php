@@ -32,41 +32,38 @@ class ApiGuard implements Guard
      * Retrieve the user for the current request.
      *
      * @param string|null $token
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return array{user:\Illuminate\Contracts\Auth\Authenticatable, message:string, status: int}
      */
     public function user($token = null)
     {
         if (!$token && $this->user) {
-            return $this->user;
+            return ['user' => $this->user, 'message' => 'Success.', 'status' => 200];
         }
         // Retrieve token from request if not provided
         $token = $token ?: request()->bearerToken();
         if (empty($token))
-            return null;
+            return ['user' => null, 'message' => 'Invalid Token', 'status' => 401];
 
         // Authenticate the user with the token
-        $user = $this->authenticateWithToken($token);
-
-        if ($user) {
-            $this->user = $user;
-        }
-
-        return $this->user;
+        return $this->authenticateWithToken($token);
     }
 
     /**
      * Authenticate the user by the provided token.
      *
      * @param string|null $accessToken
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return array{user:\Illuminate\Contracts\Auth\Authenticatable, message:string, status: int}
      */
     protected function authenticateWithToken($accessToken)
     {
         // 1. decode token
         $payload = $this->tokenService->decodeToken($accessToken);
+        $userAgent = request()->header('User-Agent');
+        $device = StringUtils::extractDeviceInfo($userAgent);
+
         // 2. validate token
         if ($this->tokenService->isTokenExpired($payload->getExpiresAt())) {
-            return null;
+            return ['user' => null, 'message' => 'Token Expired', 'status' => 403];
         }
         // 3. Check token in Redis
         $tokenableId = $payload->getTokenableId();
@@ -80,31 +77,35 @@ class ApiGuard implements Guard
             $constraints = [
                 "tokenableId" => $tokenableId,
                 "type" => $type,
+                "device" => $device,
             ];
-            return $this->provider->retrieveById($constraints);
+            $authUser = $this->provider->retrieveById($constraints);
+            if ($authUser) {
+                return ['user' => $authUser, 'message' => 'Success', 'status' => 200];
+            }
         } else {
             // 3. If access_token not exist in Redis check database
             $tokenRecord = RefreshToken::where('access_token', $accessToken)
                 ->first();
             if (!$tokenRecord) {
-                return null;
+                return ['user' => null, 'tokenExpired' => false, 'status' => 404];
             }
             // If provider is is user and you pass ngo token you can access user if they have same id
             // So this must be imposed
             $constraints = [
                 "tokenableId" => $tokenRecord->tokenable_id,
                 "type" => $type,
+                "device" => $device,
             ];
             // Use the provider linked to the guard to resolve the correct model
             $authUser =  $this->provider->retrieveById($constraints);
             if ($authUser) {
                 // 2. Store token in Redis
                 $this->redisService->storeTokenWithExpiry($key, $accessToken);
-                return $authUser;
-            } else {
-                return null;
+                return ['user' => $authUser, 'message' => 'Success', 'status' => 200];
             }
         }
+        return ['user' => null, 'message' => 'Authenticated User not found.', 'status' => 404];
     }
 
     public function check()

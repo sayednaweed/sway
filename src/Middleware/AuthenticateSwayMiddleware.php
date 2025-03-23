@@ -18,15 +18,16 @@ class AuthenticateSwayMiddleware
     {
         $guardType = $guard ? $guard : "user:api";
         // 1. Get user if Berear exist
-        $user = Auth::guard($guardType)->user();
+        $result = Auth::guard($guardType)->user();
         // If the user is authenticated, bind the user to the request
+        $user = $result['user'];
         if ($user) {
             $request->setUserResolver(function () use ($user) {
                 return $user;  // Return the authenticated user
             });
         } else {
             // You can redirect to a custom login route or return an error message for API users
-            return response()->json(['message' => 'access to the requested resource is forbidden'], 403);
+            return response()->json(['message' => $result['message']], $result['status']);
         }
 
         return $next($request);

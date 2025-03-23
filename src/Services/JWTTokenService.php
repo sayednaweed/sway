@@ -11,6 +11,7 @@ use Sway\Utils\StringUtils;
 use Sway\Models\RefreshToken;
 use Sway\Services\RedisService;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\DB;
 
 class JWTTokenService
 {
@@ -37,7 +38,19 @@ class JWTTokenService
      */
     public function generateToken(Authenticatable $user, $model)
     {
+        $ipAddress = request()->ip();
+        $userAgent = request()->header('User-Agent');
+        $device = StringUtils::extractDeviceInfo($userAgent);
+        $browser = StringUtils::extractBrowserInfo($userAgent);
         $modelName = StringUtils::getModelName($model);
+
+        // 1. Delete token
+        DB::table('refresh_tokens as rt')
+            ->where('rt.tokenable_id', $user->id)
+            ->where('rt.tokenable_type', $modelName)
+            ->where('rt.device', $device)
+            ->delete();
+
         // Set token expiration times
         $accessTokenExpiresAt = now()->addMinutes(self::$accessTokenExpiration); // Access token expires in 1 hour
         $refreshTokenExpiresAt = now()->addDays(self::$refreshTokenExpiration); // Refresh token expires in 2 weeks
@@ -56,10 +69,14 @@ class JWTTokenService
         $accessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
         $refreshToken = JWT::encode($refreshPayload, self::$secretKey, "HS256");
 
+
         // Store the tokens in the RefreshToken model
-        $token =  RefreshToken::create([
+        $token = RefreshToken::create([
             'tokenable_id' => $user->id,  // Ensure you provide the tokenable_id
             'tokenable_type' => $modelName,
+            'device' => $device,
+            'browser' => $browser,
+            'ip_address' => $ipAddress,
             'access_token' => $accessToken, // Save hashed access token for security
             'refresh_token' => $refreshToken, // Save hashed refresh token for security
             'access_token_expires_at' => $accessTokenExpiresAt,
