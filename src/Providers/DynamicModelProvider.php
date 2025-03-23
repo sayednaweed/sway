@@ -32,7 +32,6 @@ class DynamicModelProvider implements UserProvider
     {
         $tokenableId = $identifier['tokenableId'];
         $type = $identifier['type'];
-        $device = $identifier['device'];
         $passedType = "App\Models\\{$type}";
         if (strcasecmp($this->modelClass, $passedType) === 0) {
             // Same model token

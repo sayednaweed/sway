@@ -77,7 +77,6 @@ class ApiGuard implements Guard
             $constraints = [
                 "tokenableId" => $tokenableId,
                 "type" => $type,
-                "device" => $device,
             ];
             $authUser = $this->provider->retrieveById($constraints);
             if ($authUser) {
@@ -95,7 +94,6 @@ class ApiGuard implements Guard
             $constraints = [
                 "tokenableId" => $tokenRecord->tokenable_id,
                 "type" => $type,
-                "device" => $device,
             ];
             // Use the provider linked to the guard to resolve the correct model
             $authUser =  $this->provider->retrieveById($constraints);
