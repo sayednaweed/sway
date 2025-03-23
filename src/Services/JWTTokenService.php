@@ -106,12 +106,16 @@ class JWTTokenService
             return null;
         // 1. Remove From Redis
         $payload = $this->decodeToken($token);
+        $userAgent = request()->header('User-Agent');
+        $device = StringUtils::extractDeviceInfo($userAgent);
         // 2. Check token in Redis
         $key = StringUtils::getRedisKey($payload->getType(), $payload->getTokenableId());
         $this->redisService->deleteToken($key);
         // 2. Remove from database
-        $deletedCount = RefreshToken::where('access_token', $token)
+        $deletedCount = DB::table('refresh_tokens')
             ->where('tokenable_id', $user->id)
+            ->where('tokenable_type', $payload->getType())
+            ->where('device', $device)
             ->delete();
 
         if ($deletedCount > 0) {
