@@ -103,7 +103,7 @@ class ApiGuard implements Guard
                 return ['user' => $authUser, 'message' => 'Success', 'status' => 200];
             }
         }
-        return ['user' => null, 'message' => 'Authenticated User not found.', 'status' => 404];
+        return ['user' => null, 'message' => 'Invalid email or password.', 'status' => 404];
     }
 
     public function check()
