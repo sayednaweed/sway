@@ -5,10 +5,10 @@
   "description": "A custom Laravel authentication package with Redis and database fallback for API authentication.",
   "type": "library",
   "require": {
-    "php": "^7.4|^8.0",
-    "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
-    "illuminate/database": "^8.0|^9.0|^10.0|^11.0",
-    "illuminate/auth": "^8.0|^9.0|^10.0|^11.0",
+    "php": "^8.1 || ^8.2 || ^8.3",
+    "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+    "illuminate/database": "^8.0|^9.0|^10.0|^11.0|^12.0",
+    "illuminate/auth": "^8.0|^9.0|^10.0|^11.0|^12.0",
     "firebase/php-jwt": "^6.11"
   },
   "license": "MIT",
