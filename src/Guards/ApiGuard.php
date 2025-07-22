@@ -3,6 +3,7 @@
 namespace Sway\Guards;
 
 use Exception;
+use Jenssegers\Agent\Agent;
 use Sway\Utils\StringUtils;
 use Sway\Models\RefreshToken;
 use Sway\Services\RedisService;
@@ -11,6 +12,7 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\DB;
 
 class ApiGuard implements Guard
 {
@@ -58,8 +60,8 @@ class ApiGuard implements Guard
     {
         // 1. decode token
         $payload = $this->tokenService->decodeToken($accessToken);
-        $userAgent = request()->header('User-Agent');
-        $device = StringUtils::extractDeviceInfo($userAgent);
+        $agent = new Agent();
+        $platform = $agent->platform();
 
         // 2. validate token
         if ($this->tokenService->isTokenExpired($payload->getExpiresAt())) {
@@ -84,7 +86,8 @@ class ApiGuard implements Guard
             }
         } else {
             // 3. If access_token not exist in Redis check database
-            $tokenRecord = RefreshToken::where('access_token', $accessToken)
+            $tokenRecord = DB::table('refresh_tokens as rt')->where('rt.access_token', $accessToken)
+                ->select('rt.tokenableId')
                 ->first();
             if (!$tokenRecord) {
                 return ['user' => null, 'tokenExpired' => false, 'status' => 404];
@@ -174,10 +177,14 @@ class ApiGuard implements Guard
         $user = $this->provider->retrieveByCredentials($credentials);
         // Check if user exists and password matches
         if ($user && Hash::check($credentials['password'], $user->password)) {
+            // 1. Check device
             // Generate and store the access and refresh tokens
+            $result = $this->generateTokens($user);
             return [
                 "user" => $user,
-                "tokens" => $this->generateTokens($user)
+                "access_token" => $result['access_token'],
+                "refresh_token" => $result['refresh_token'],
+                "logged_in_device" => $result['logged_in_device'],
             ];
         }
         return null;

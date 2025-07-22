@@ -7,11 +7,12 @@ use Carbon\Carbon;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Sway\Types\Payload;
+use Jenssegers\Agent\Agent;
 use Sway\Utils\StringUtils;
 use Sway\Models\RefreshToken;
 use Sway\Services\RedisService;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class JWTTokenService
 {
@@ -39,17 +40,10 @@ class JWTTokenService
     public function generateToken(Authenticatable $user, $model)
     {
         $ipAddress = request()->ip();
-        $userAgent = request()->header('User-Agent');
-        $device = StringUtils::extractDeviceInfo($userAgent);
-        $browser = StringUtils::extractBrowserInfo($userAgent);
+        $agent = new Agent();
+        $platform = $agent->platform();
+        $browser = $agent->browser();
         $modelName = StringUtils::getModelName($model);
-
-        // 1. Delete token
-        DB::table('refresh_tokens')
-            ->where('tokenable_id', $user->id)
-            ->where('tokenable_type', $modelName)
-            ->where('device', $device)
-            ->delete();
 
         // Set token expiration times
         $accessTokenExpiresAt = now()->addMinutes(self::$accessTokenExpiration); // Access token expires in 1 hour
@@ -74,7 +68,7 @@ class JWTTokenService
         $token = RefreshToken::create([
             'tokenable_id' => $user->id,  // Ensure you provide the tokenable_id
             'tokenable_type' => $modelName,
-            'device' => $device,
+            'platform' => $platform,
             'browser' => $browser,
             'ip_address' => $ipAddress,
             'access_token' => $accessToken, // Save hashed access token for security
@@ -90,6 +84,11 @@ class JWTTokenService
         return [
             "access_token" => $token->access_token,
             "refresh_token" => $token->refresh_token,
+            "logged_in_device" => [
+                'ip_address' => $ipAddress,
+                'platform' => $platform,
+                'browser' => $browser,
+            ],
         ];
     }
 
@@ -106,8 +105,6 @@ class JWTTokenService
             return null;
         // 1. Remove From Redis
         $payload = $this->decodeToken($token);
-        $userAgent = request()->header('User-Agent');
-        $device = StringUtils::extractDeviceInfo($userAgent);
         // 2. Check token in Redis
         $key = StringUtils::getRedisKey($payload->getType(), $payload->getTokenableId());
         $this->redisService->deleteToken($key);
@@ -115,7 +112,7 @@ class JWTTokenService
         $deletedCount = DB::table('refresh_tokens')
             ->where('tokenable_id', $user->id)
             ->where('tokenable_type', $payload->getType())
-            ->where('device', $device)
+            ->where('access_token', $token)
             ->delete();
 
         if ($deletedCount > 0) {

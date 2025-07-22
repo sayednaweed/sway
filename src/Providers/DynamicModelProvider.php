@@ -68,7 +68,6 @@ class DynamicModelProvider implements UserProvider
         }
         // Search by email or email_id in table
         return $this->modelClass::where($column, $credentials[$column])->first(); // Eloquent method
-        // return $this->modelClass::where("email", $credentials['email'])->first(); // Eloquent method
     }
 
     /**
