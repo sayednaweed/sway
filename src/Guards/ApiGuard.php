@@ -60,8 +60,6 @@ class ApiGuard implements Guard
     {
         // 1. decode token
         $payload = $this->tokenService->decodeToken($accessToken);
-        $agent = new Agent();
-        $platform = $agent->platform();
 
         // 2. validate token
         if ($this->tokenService->isTokenExpired($payload->getExpiresAt())) {
